@@ -1,0 +1,55 @@
+---
+- name: 잡 제어 플레이북 예제
+  hosts: webservers
+  gather_facts: yes
+  vars_files:
+    - vars/vars.yml
+  tasks:
+    - name: 시스템 사양 점검 - 메모리 & 배포판
+      fail:
+        msg: "{{ansible_hostname}}'s Minimum memory: 256MB "
+      when: 
+        - ansible_memfree_mb <= 256
+        - ansible_distribution != 'CentOS'
+    
+    - name: 웹 최신 패키지 설치
+      yum: 
+        name: "{{packages}}"
+        state: latest
+    
+    - name: 웹 서비스 기동
+      service:
+        name: "{{item}}"
+        state: started
+        enabled: yes
+      with_items: "{{services}}"
+
+    - name: 블록 - 웹 서버 설정이 잘 되면
+      block:
+      - name: 웹 서버 설정
+        # files/index.html -> /var/wwww/html/index.html
+        # files/localhost.key -> /etc/pki/tls/private/localhost.key
+        # files/localhost.crt -> /etc/pki/tls/certs/localhost.crt
+        copy:
+          src: "{{item.src}}"
+          dest: "{{item.dest}}"
+        with_items: "{{conf_files}}"
+        notify: restart httpd
+      rescue:
+      - name: 웹 서버 설정 에러메세지 출력
+        debug:
+          msg: "웹 서버 설정 및 인증서 배포 에러 발생"
+    
+    - name: 방화벽에 포트 / 서비스 등록
+      firewalld:
+        service: "{{item}}"
+        permanent: yes
+        immediate: yes
+        state: enabled
+      with_items: "{{fw_svc}}"
+
+  handlers:
+  - name: restart httpd
+    service:
+      name: httpd
+      state: restarted

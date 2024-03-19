@@ -1,0 +1,51 @@
+---
+- name: DB 패키지 설치
+  hosts: databases
+  gather_facts: no
+  vars_files:
+    - vars/db.yml
+  tasks:
+    - name: DB 패키지 설치
+      yum:
+        name: "{{pkg_db}}"
+        state: present
+      notify:
+       - set db init
+      
+    - name: DB 서비스 기동
+      service:
+        name: "{{svc_db}}"
+        state: started
+        enabled: yes
+
+    - name: DB 설정 파일 수정
+      get_url:
+        url: "{{conf_src_url}}"
+        dest: "{{conf_dest_file}}"
+        owner: mysql
+        group: mysql
+        force: yes
+      notify:
+        - restart db service
+
+  handlers:
+  - name: restart db service
+    service:
+      name: "{{svc_db}}"
+      state: restarted
+
+  - name: set db init
+    become: true
+    expect:
+      command: mysql_secure_installation
+      responses:
+        'Enter current password for root': ''
+        'Switch to unix_socket authentication': 'Y'
+        'Change the root password?': 'Y'
+        'New password:': 'soldesk1.'
+        'Re-enter new password:': 'soldesk1.'
+        'Remove anonymous users?': 'Y'
+        'Disallow root login remotely?': 'Y'
+        'Remove test database and access to it?': 'Y'
+        'Reload privilege tables now': 'Y'
+      timeout: 1

@@ -1,0 +1,18 @@
+---
+- name: 각 데이터 센터 시간 동기화
+  hosts: datacenters
+
+  roles:
+  - rhel-system-roles.timesync
+
+  post_tasks:
+  - name: 타임존 설정
+    timezone:
+      name: Asia/Seoul
+    notify: restart_chronyd
+
+  handlers:
+    - name: restart_chronyd
+      service:
+        name: chronyd
+        state: restarted

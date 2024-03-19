@@ -1,0 +1,7 @@
+---
+- name: /var/www/html/index.tml 파일 만들기
+  copy:
+    content: |
+      hostname - "{{ansible_fqdn}}"
+      IP addr - "{{ansible_default_ipv4.address}}"
+    dest: "{{indexfile}}"

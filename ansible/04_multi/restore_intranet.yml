@@ -1,0 +1,40 @@
+---
+# 1) 방화벽 서비스 OFF - http(80/tcp), https(443/tcp)
+# 2) 서비스 OFF - httpd => service
+# 3) 서비스 설정 삭제 - /var/www/html/index.html => file
+# 4) 패키지 삭제 - httpd, mod_ssl => yum
+
+- name: Remove and Stop Web service
+  hosts: web1
+  tasks:
+    # 1) 방화벽 서비스 OFF - http(80/tcp), https(443/tcp)
+  - name: 1) 방화벽 서비스 OFF - http(80/tcp), https(443/tcp)
+    firewalld:
+      port: "{{ item }}"
+      permanent: yes
+      immediate: yes
+      state: disabled
+    loop:
+      - 80/tcp
+      - 443/tcp
+# 2) 서비스 OFF - httpd => service
+  - name: 2) 서비스 OFF - httpd => service
+    service:
+      name: httpd
+      state: stopped
+      enabled: no
+    ignore_errors: yes
+
+# 3) 서비스 설정 삭제 - /var/www/html/index.html => file
+  - name: 3) 서비스 설정 삭제 - /var/www/html/index.html => file
+    file:
+      path: /var/www/html/index.html
+      state: absent
+# 4) 패키지 삭제 - httpd, mod_ssl => yum
+  - name: 4) 패키지 삭제 - httpd, mod_ssl => yum
+    yum:
+      name:
+        - httpd
+        - mod_ssl
+      state: absent
+ 

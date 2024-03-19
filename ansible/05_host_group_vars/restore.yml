@@ -1,0 +1,15 @@
+---
+- name: 호스트 또는 그룹 변수 실습 복원
+  hosts: all
+  tasks:
+    - name: 패키지 삭제 - {{packages}}
+      yum:
+        name: "{{packages}}"
+        state: absent
+      vars:
+        packages:
+          - httpd
+          - mariadb-server
+          - php
+          - mutt
+        

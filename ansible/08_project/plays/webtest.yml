@@ -1,0 +1,12 @@
+---
+- name: 웹 테스트
+  hosts: localhost
+  become: false
+  gather_facts: no
+  tasks:
+  - name: 웹 요청
+    uri:
+      url: "{{weburl}}"
+      status_code: 200
+    register: output
+  - debug: var=ouput.msg

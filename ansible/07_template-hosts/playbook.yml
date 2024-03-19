@@ -1,0 +1,10 @@
+---
+- name: /etc/hosts 파일 배포
+  hosts: all
+  gather_facts: yes
+  tasks:
+  - name: 템플릿 hosts.j2를 사용한 /etc/hosts 파일 배포
+    template:
+      src: templates/hosts.j2
+      dest: /etc/hosts
+    

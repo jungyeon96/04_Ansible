@@ -1,0 +1,49 @@
+---
+# 웹 서버 기동하기
+# 1) 웹 패키지 설치(httpd, mod_ssl)
+# 2) 웹 서비스 설정(/var/www/html/index.html)
+# 3) 웹 서비스 기동(httpd)
+# 4) 방화벽 등록(http,https)
+# 5) SELINUX(?)
+
+# 웹 서버 기동하기
+- name: 웹 서버 기동하기
+  hosts: webservers
+  vars:
+    pkg_web_http: httpd
+    pkg_web_https: mod_ssl
+    pkg_web_dir: httpd-filesystem
+    file_web: /var/www/html/index.html
+    svc_web: httpd
+    fw_http: http
+    fw_https: https
+  tasks:
+# 1) 웹 패키지 설치(httpd, mod_ssl)
+  - name: 1) 웹 패키지 설치({{pkg_web_http}}, {{pkg_web_https}})
+    yum:
+      name:
+        - "{{ pkg_web_http }}"
+        - "{{ pkg_web_https }}"
+      state: latest
+# 2) 웹 서비스 설정(/var/www/html/index.html)
+  - name: 2) 웹 서비스 설정({{file_web}})
+    copy:
+      content: "Web Server Page\n"
+      dest: "{{file_web}}"
+# 3) 웹 서비스 기동(httpd)
+  - name: 3) 웹 서비스 기동({{svc_web}})
+    service:
+      name: "{{svc_web}}"
+      enabled: yes
+      state: started
+# 4) 방화벽 등록(http,https)
+  - name: 4) 방화벽 등록({{fw_http}},{{fw_https}})
+    firewalld:
+      service: "{{item}}"
+      permanent: yes
+      immediate: yes
+      state: enabled
+    loop:
+      - "{{fw_http}}"
+      - "{{fw_https}}" 
+# 5) SELINUX(?)

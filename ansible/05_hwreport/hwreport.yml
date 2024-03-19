@@ -1,0 +1,55 @@
+---
+- name: 결과 폴더 만들기
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: results 디렉토리 삭제
+      file:
+        path: results
+        state: absent
+ 
+- name: 하드웨어 정보 수집하기
+  hosts: all
+  gather_facts: yes
+  tasks: 
+  # 1) 템플릿 파일 배포 (/etc/hwreport.txt)
+    - name: 1) 템플릿 파일 배포 (/etc/hwreport.txt)
+      copy:
+        src: files/hwreport.txt
+        dest: /root/hwreport.txt
+        owner: root
+        group: root
+        mode: '0400'
+  # 2) 하드웨어 정보 수집
+  # 인벤토리 호스트 이름
+    - name: 인벤토리 호스트 이름 수집
+      replace:
+        path: /root/hwreport.txt
+        regexp: 'inventoryhostname'
+        replace: "{{ansible_hostname}}"
+  # 총 메모리
+    - name: 총 메모리 정보 수집
+      replace:
+        path: /root/hwreport.txt
+        regexp: 'totalmem'
+        replace: "{{ansible_memtotal_mb}}"
+  # BIOS 버전
+    - name: BIOS 버전 정보 수집
+      replace:
+        path: /root/hwreport.txt
+        regexp: 'biosversion'
+        replace: "{{ansible_bios_version}}"
+  # /dev/sda 디스크 크기
+    - name: /dev/sda 디스크 크기 정보 수집
+      replace:
+        path: /root/hwreport.txt
+        regexp: 'sdasize'
+        replace: "{{ansible_devices.sda.size}}"
+  # 3) 하드웨어 정보 파일 수집
+    - name: /root/hwreport.txt 파일 수집
+      fetch:
+        src:  /root/hwreport.txt
+        # dest: results
+        dest: results/hwerport-{{inventory_hostname}}.txt
+        flat: yes
+

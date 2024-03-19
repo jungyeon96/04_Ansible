@@ -1,0 +1,20 @@
+---
+- name: 간단한 웹 패키지 설치와 서비스 기동하기
+  hosts: webserver
+  gather_facts: yes
+  tasks:
+    - name: 패키지 설치
+      yum:
+        name: "{{ansible_local.custom.general.package}}"
+        state: latest
+    - name: 웹 서비스 기동
+      service:
+        name: "{{ansible_local.custom.general.service}}"
+        state: "{{ansible_local.custom.general.state}}"
+        enabled: yes
+    - name: 방화벽 서비스 Oepn
+      firewalld: 
+        service: "{{ansible_local.custom.general.fwsvc}}"
+        permanent: yes
+        immediate: yes
+        state: enabled

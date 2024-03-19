@@ -1,0 +1,92 @@
+---
+- name: 웹 서비스 설정 및 기동 예제
+  hosts: ansible1.example.com
+  gather_facts: yes
+  vars_files:
+    - vars/variables.yml
+  tasks:
+# 1) 패키지 설치
+# 2) 웹 서버 설정
+# 3) 웹 서비스 기동
+# 4) 방화벽에 서비스 등록
+# 5) 클라이언트에서 웹 요청
+
+# 1) 패키지 설치
+# packages: httpd, mod_ssl
+  - name: 웹 관련 패키지 설치
+    yum:
+      name:
+        - "{{pkg_http}}"
+        - "{{pkg_https}}"
+      state: latest
+
+# 2) 웹 서버 설정
+# /etc/httpd/httpd.conf
+  - name: /etc/httpd/httpd.conf
+    copy:
+      src: "{{conf_src_web}}"
+      dest: "{{conf_dest_web}}"
+# 2-1) /var/www/html/index.html
+  - name: /var/www/html/index.html 파일 작업
+    copy:
+      # "ansible 192.168.10.11 has been customized by Ansible"
+      # "{{ansible_fqdn}}" "{{ansible_facts['fqdn']}}"
+      content: |
+        hostname: {{ansible_facts['hostname']}} 
+        ip addr: {{ansible_default_ipv4.address }}
+      dest: "{{index_dest_web}}"
+# 2-2) /var/www/html/.htaccess
+  - name: /var/www/html/.htaccess 
+    copy:
+      src: "{{htaccess_src}}"
+      dest: "{{htaccess_dest}}"
+# 2-3) /etc/httpd/secrets/htpasswd
+  - name: /etc/httpd/secrets 디렉토리 생성
+    file:
+      path: "{{secrets_dir}}"
+      state: directory
+      owner: apache 
+      group: apache
+      mode: '0700'
+  - name: /etc/httpd/secrets/htpasswd 파일 생성
+    copy:
+      src: "{{secrets_src}}"
+      dest: "{{secrets_dest}}"
+      owner: apache
+      group: apache
+      mode: '0400'
+
+# 3) 웹 서비스 기동
+  - name: 3) 웹서비스 기동
+    service:
+      name: "{{svc_web}}"
+      state: started
+      enabled: yes
+# 4) 방화벽에 서비스 등록
+  - name: 4) 방화벽에 서비스 등록
+    firewalld:
+      service: "{{item}}"
+      permanent: yes
+      immediate: yes
+      state: enabled
+    loop:
+      - "{{fw_http}}"
+      - "{{fw_https}}"
+# 5) 클라이언트에서 웹 요청
+- name: 웹 요청
+  vars_files:
+    - secrets/mysecret.yml
+  hosts:  localhost
+  become: false
+  gather_facts: no
+  tasks:
+    - name: 웹 서버에 연결 및 인증
+      uri:
+        url: https://ansible1.example.com
+        validate_certs: no
+        user: "{{loginuser}}"
+        password: "{{loginpass}}"
+        force_basic_auth: yes
+        status_code: 200
+      register: auth_output
+    - debug: var=auth_output

@@ -1,0 +1,56 @@
+---
+# tasks file for myvhost
+# 작업 내용 정리
+# 1) 웹 패키지 설치
+# 2) 웹 서비스 기동
+# 3) 웹 서버 설정
+# * /etc/httpd/conf.d/vhost.conf (<== vhost.conf.j2)
+# * notify <-> handler
+# 4) 방화벽에 서비스 등록 - http, https
+
+# 1) 웹 패키지 설치
+- name: 웹 패키지 설치 - httpd, mod_ssl
+  yum:
+    name: "{{pkg_web}}"
+    state: latest
+
+# 2) 웹 서비스 기동
+- name: 웹 서비스 기동 - {{svc_seb}}
+  service:
+    name: "{{item}}"
+    state: started
+    enabled: yes
+  with_items: "{{svc_web}}"
+
+# 3) 웹 서버 설정
+# * /etc/httpd/conf.d/vhost.conf (<== vhost.conf.j2)
+#   - ServerAdmin webmaster@ansible1.example.com
+#   - ServerName ansible1.example.com
+#   - DocumentRoot /var/www/vhosts/ansible1/
+# * notify <-> handler
+
+- name: 웹 서버 설정 - 가상 호스트 설정
+  template:
+    src: vhost.conf.j2
+    dest: /etc/httpd/conf.d/vhost.conf
+  notify: restart_httpd
+
+- name: 웹 디렉토리 생성 - /var/www/vhosts/{{ansible_hostname}}
+  file:
+    path: "/var/www/vhosts/{{ansible_hostname}}"
+    state: directory
+
+- name: 웹 서버 설정 - /var/www/vhosts/{{ansible_hostname}}/index.html 파일 설정
+  template:
+    src: index.html.j2
+    dest: "/var/www/vhosts/{{ansible_hostname}}/index.html"
+  
+# 4) 방화벽에 서비스 등록 - http, https
+- name: 방화벽에 서비스 등록 - http, https
+  firewalld:
+    service: "{{item}}" 
+    permanent: yes
+    immediate: yes
+    state: enabled
+  with_items: "{{fw_svc}}"
+

@@ -1,0 +1,7 @@
+---
+- name: user motd role playbook
+  hosts: ansible.example.com
+  remote_user: devops
+  become: true
+  roles:
+  - motd

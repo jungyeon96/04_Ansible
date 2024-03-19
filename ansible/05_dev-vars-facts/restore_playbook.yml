@@ -1,0 +1,29 @@
+---
+- name: 웹 서비스 삭제
+  hosts: webserver
+  gather_facts: yes
+  tasks:
+    - name: 방화벽 서비스 Close
+      firewalld: 
+          service: "{{ansible_local.custom.general.fwsvc}}"
+          permanent: yes
+          immediate: yes
+          state: disabled
+
+    - name: 웹 서비스 종료
+      service:
+        name: "{{ansible_local.custom.general.service}}"
+        state: stopped
+        enabled: no
+
+    - name: 웹 패키지 삭제
+      yum:
+        name: "{{ansible_local.custom.general.package}}"
+        state: absent
+    
+    - name: /etc/ansible 디렉토리 삭제
+      file:
+        path: /etc/ansible
+        state: absent
+
+      

@@ -1,0 +1,12 @@
+---
+- name: /etc/motd 파일 배포
+  hosts: all
+  gather_facts: yes
+  vars:
+  - system_owner: webmaster@example.com
+  tasks:
+  - name: /etc/motd 파일을 4대의 서버에 배포하기
+    template:
+      src: templates/motd.j2
+      dest: /etc/motd
+  

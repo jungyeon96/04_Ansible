@@ -1,0 +1,37 @@
+---
+- name: DB 작업 복원
+  hosts: databases
+  gather_facts: yes
+  vars:
+    db_packages:
+      - mariadb-server
+      - python3-PyMySQL
+    db_config_url: http://192.168.10.10
+    db_config_src_path_small: "{{ db_config_url }}/my.cnf.small"
+    db_config_src_path_large: "{{ db_config_url }}/my.cnf.large"
+    db_config_path: /etc/my.cnf
+    db_service: mariadb
+
+  tasks:
+    - name: DB 서비스 종료
+      service:
+        name: '{{db_service}}'
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    - name: DB 패키지 삭제
+      yum:
+        name: "{{item}}"
+        state: absent
+      with_items: "{{db_packages}}"
+
+    - name: /etc/my.cnf 파일 삭제
+      file:
+        path: "{{db_config_path}}"
+        state: absent
+
+    - name: /etc/motd 파일 삭제
+      file:
+        path: /etc/motd
+        state: absent

@@ -1,0 +1,93 @@
+---
+# 초기 구성
+# 1) 웹 서버 구성
+#   * 웹 패키지 설치: httpd, mod_ssl
+#   * 웹 서비스 구성: /var/www/html/index.php
+#   * 웹 서비스 기동 : httpd
+#   * 방화벽에 등록: http,https
+# 2) 웹 언어
+#   * 웹 언어 패키지 설치: php, php-mysqlnd, php-pdo
+# 3) DB 서버 구성
+#   * DB 패키지 설치: mariadb-server, mysql
+#   * DB 서비스 기동: mariadb
+#   * DB 설정
+#     * DB 초기 설정: mysql_secure_installation
+#     * DB 사용자 추가/권한 부여
+#   * 방화벽에 등록: mysql
+
+- name: 웹 서버 구성 및 DB 서버 구성
+  hosts: web2
+  tasks:
+# 1) 웹 서버 구성
+#   * [V] 웹 패키지 설치: httpd, mod_ssl
+  - name: 패키지 설치 - WEB + PHP + DB
+    yum:
+      name:
+      - httpd
+      - mod_ssl
+      - php
+      - php-mysqlnd
+      - php-pdo
+      - mariadb-server
+      - mariadb
+      - python3-pip
+#   * [V] 웹 서비스 구성: /var/www/html/index.php
+  - name: "웹 서비스 구성: /var/www/html/index.php"
+    copy:
+      src: files/index.php
+      dest: /var/www/html/index.php
+  - name: "웹 서비스 구성: /var/www/html 디렉토리 설정"
+    file:
+      path: /var/www/html
+      state: directory
+      recurse: yes
+      owner: ansible
+      group: ansible
+#   * [V] 웹 서비스 기동 : httpd
+  - name: "WEB + DB 서비스 기동"
+    service:
+      name: "{{ item }}"
+      state: started
+      enabled: yes
+    loop:
+      - httpd
+      - mariadb
+#   * [V] 방화벽에 등록: http,https
+  - name: "방화벽에 등록 - WEB (http,https) + DB(mysql)"
+    firewalld:
+      service: "{{ item }}"
+      permanent: true
+      immediate: true
+      state: enabled
+    loop:
+      - http
+      - https
+      - mysql
+# 2) 웹 언어
+#   * [V] 웹 언어 패키지 설치: php, php-mysqlnd, php-pdo
+# 3) DB 서버 구성
+#   * [V] DB 패키지 설치: mariadb-server, mariadb
+#   * [V] DB 서비스 기동: mariadb
+#   * DB 설정
+#     * DB 초기 설정: mysql_secure_installation
+#     * DB 사용자 추가/권한 부여
+  - name: DB 설정을 위한 pip3 패키지 설치
+    pip:
+      name: pymysql
+      executable: pip3
+  - name: DB 설정 - root 사용자 암호 변경(root@'%')
+    become: true
+    expect:
+      command: mysql_secure_installation
+      responses:
+        'Enter current password for root': ''
+        'Switch to unix_socket authentication': 'Y'
+        'Change the root password?': 'Y'
+        'New password:': 'soldesk1.'
+        'Re-enter new password:': 'soldesk1.'
+        'Remove anonymous users?': 'Y'
+        'Disallow root login remotely?': 'Y'
+        'Remove test database and access to it?': 'Y'
+        'Reload privilege tables now': 'Y'
+      timeout: 1
+#   * [V] 방화벽에 등록: mysql

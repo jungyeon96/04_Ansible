@@ -1,0 +1,22 @@
+packages:
+- httpd
+- mod_ssl
+- firewalld
+
+services:
+- httpd
+- firewalld
+
+conf_files:
+- src: files/index.html
+  dest: /var/www/html/index.html
+
+- src: files/localhost.key
+  dest: /etc/pki/tls/private/localhost.key
+
+- src: files/localhost.crt
+  dest: /etc/pki/tls/certs/localhost.crt
+
+fw_svc:
+- http
+- https

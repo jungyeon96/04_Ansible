@@ -1,0 +1,8 @@
+---
+- name: epel-release 패키지 설치
+  hosts: all
+  gather_facts: no
+  tasks:
+    - yum:
+        name: epel-release
+        state: latest

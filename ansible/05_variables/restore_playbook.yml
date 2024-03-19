@@ -1,0 +1,34 @@
+---
+- name: 웹 서비스 복구
+  hosts: all
+  vars_files:
+    - vars/web.yml
+  tasks:
+    - name: 방화벽 서비스 포트 삭제
+      firewalld:
+        service: "{{item}}"
+        permanent: yes
+        immediate: yes
+        state: disabled
+      loop:
+        - "{{fw_http}}"
+        - "{{fw_https}}"
+
+    - name: 웹 서비스 내리기
+      service:
+        name: "{{svc_web}}"
+        enabled: no
+        state: stopped
+    
+    - name: 웹 서비스 파일 삭제
+      file:
+        path: "{{file_web}}"
+        state: absent
+
+    - name: 웹 패키지 삭제
+      yum:
+        name:
+          - "{{pkg_web_http}}"
+          - "{{pkg_web_https}}"
+        state: absent
+    

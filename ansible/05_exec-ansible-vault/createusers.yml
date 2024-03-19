@@ -1,0 +1,14 @@
+---
+- name: 사용자 추가
+  hosts: devservers
+  remote_user: devops
+  become: true
+  vars_files:
+  - vars/secret.yml
+  tasks:
+    - name: 다중 사용자 추가 및 암호 설정
+      user: 
+        name: "{{item.name}}"
+        password: "{{item.pw | password_hash('sha512')}}"
+      with_items: 
+        - "{{newusers}}"

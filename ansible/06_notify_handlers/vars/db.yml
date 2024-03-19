@@ -1,0 +1,9 @@
+pkg_db:
+  - mariadb-server
+  - python3-PyMySQL
+  - python3-pip
+
+svc_db: mariadb
+
+conf_src_url: 'http://ansible.example.com/my.cnf.standard'
+conf_dest_file: /etc/my.cnf

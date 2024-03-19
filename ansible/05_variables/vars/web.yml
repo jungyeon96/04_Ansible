@@ -1,0 +1,7 @@
+pkg_web_http: httpd
+pkg_web_https: mod_ssl
+pkg_web_dir: httpd-filesystem
+file_web: /var/www/html/index.html
+svc_web: httpd
+fw_http: http
+fw_https: https

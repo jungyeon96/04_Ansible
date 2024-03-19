@@ -1,0 +1,13 @@
+---
+- name: 사용자 삭제
+  hosts: all
+  vars_files:
+  - vars/secret.yml
+  tasks:
+    - name: 다중 사용자 삭제 
+      user: 
+        name: "{{item.name}}"
+        state: absent
+        remove: yes
+      with_items: 
+        - "{{newusers}}"

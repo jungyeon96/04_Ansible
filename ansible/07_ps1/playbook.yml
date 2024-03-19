@@ -1,0 +1,20 @@
+---
+- name: ps1 변수 추가
+  hosts: all
+  remote_user: devops
+  become: false
+  gather_facts: no
+  tasks:
+  - name: 환경 파일 배포 - $HOME/.bashrc
+    template:
+        src: templates/bashrc.j2
+        dest: /home/devops/.bashrc
+        owner: devops
+        group: devops
+        mode: '0644'
+  
+  - name: 디렉토리 복사 - $HOME/.local/share/blesh/
+    copy:
+      src: files/blesh
+      dest: .local/share
+      

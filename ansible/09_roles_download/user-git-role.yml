@@ -1,0 +1,6 @@
+---
+- name: 역할 설치
+  hosts: webservers
+  roles:
+  - gano2018.ansible_git
+    

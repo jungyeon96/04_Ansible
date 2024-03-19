@@ -1,0 +1,2 @@
+- name: myhaproxy
+  src: geerlingguy.haproxy

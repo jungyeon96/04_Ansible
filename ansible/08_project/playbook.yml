@@ -1,0 +1,36 @@
+---
+- name: 웹 서버 설정
+  hosts: webservers
+  gather_facts: yes
+  tasks:
+  # 1) 패키지 설치 & 웹 서비스 기동  
+  - name: 웹 패키지 설치 및 웹 서비스 기동
+    include_tasks: tasks/environment.yml
+    vars:
+      package:
+      - httpd
+      - mod_ssl
+      service:
+      - httpd
+    when: ansible_os_family =='RedHat'
+
+  # 2) 방화벽 패키지 설치 및  서비스 기동, 방화벽 서비스 등록 
+  - name: 방화벽 패키지 설치 및 서비스 기동, 방화벽 서비스 등록
+    include_tasks: tasks/firewall.yml
+    vars:
+      package: firewalld
+      service: firewalld
+      fw_svc:
+        - http
+        - https
+    
+  # 3) 임의 작업
+  - name: /var/www/html/index.html 파일 만들기
+    include_tasks: tasks/placeholer.yml
+    vars:
+      indexfile: /var/www/html/index.html
+  
+- name: 웹 확인
+  import_playbook: plays/webtest.yml
+  vars:
+    weburl: "http://ansible1.example.com"

@@ -1,0 +1,14 @@
+- name: 모든 서버 셧다운
+  hosts: ansibles
+  tasks:
+    - name: ansible1 ~ ansible4 tjqj tutekdns
+      community.general.shutdown:
+        delay: 10
+
+    
+- name: 현재 서버 셧다운
+  hosts: localmachine
+  tasks:
+    - name: ansible 서버 셧다운
+      community.general.shutdown:
+        delay: 20
