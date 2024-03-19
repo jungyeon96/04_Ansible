@@ -2,5 +2,5 @@
 *.bash linguist-detectable=false
 *.j2 linguist-detectable=true
 *.yml linguist-detectable=true
-files/blesh/** linguist-documentation=true
-files/blesh/** linguist-vendored=true
+07_ps1/files/blesh/** linguist-documentation=true
+07_ps1/files/blesh/** linguist-vendored=true
